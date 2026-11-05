@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Payment Successful{% endblock %}
+{% block content %}
+<div class="max-w-lg mx-auto">
+  <div id="pending-header" class="text-center mb-6 {{ 'hidden' if sale.status == 'completed' else '' }}">
+    <div class="gpay-check-wrap mb-3">
+      <svg class="gpay-check" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+        <circle class="gpay-check__circle" cx="26" cy="26" r="25" fill="none"/>
+        <path class="gpay-check__mark" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+      </svg>
+    </div>
+    <h1 class="text-2xl font-bold text-brand-700">Payment successful!</h1>
+    <p class="text-slate-500 text-sm mt-1">Show this exit code to the cashier when you leave the store.</p>
+  </div>
+
+  <div id="verified-header" class="text-center mb-6 {{ '' if sale.status == 'completed' else 'hidden' }}">
+    <div class="gpay-check-wrap mb-3">
+      <svg class="gpay-check" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+        <circle class="gpay-check__circle" cx="26" cy="26" r="25" fill="none"/>
+        <path class="gpay-check__mark" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+      </svg>
+    </div>
+    <h1 class="text-2xl font-bold text-brand-700">Thank you for shopping with us!</h1>
+    <p class="text-slate-500 text-sm mt-1">Your order has been verified by the cashier — you're all set to exit.</p>
+  </div>
+
+  <div id="exit-code-box" class="bg-brand-600 rounded-2xl p-6 text-center mb-5 shadow-card {{ 'hidden' if sale.status == 'completed' else '' }}">
+    <p class="text-brand-50 text-xs uppercase tracking-widest mb-2">Your exit code</p>
+    <p class="text-5xl font-black tracking-[0.3em] text-white">{{ sale.exit_code }}</p>
+    <p id="waiting-text" class="text-brand-50/80 text-xs mt-3 flex items-center justify-center gap-1.5">
+      <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-50 animate-pulse"></span>
+      Waiting for cashier verification&hellip;
+    </p>
+  </div>
+
+  {% include "_bill.html" %}
+
+  <div class="grid grid-cols-2 gap-3 mt-6">
+    <a href="{{ url_for('customer.orders') }}" class="text-center py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50">My orders</a>
+    <a href="{{ url_for('customer.scan') }}" class="text-center py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold">Scan more</a>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{% if sale.status != 'completed' %}
+<script>
+async function pollOrderStatus() {
+  try {
+    const res = await fetch("{{ url_for('customer.order_status', sale_id=sale.id) }}");
+    const data = await res.json();
+    if (data.status === 'completed') {
+      clearInterval(pollTimer);
+      document.getElementById('pending-header').classList.add('hidden');
+      document.getElementById('exit-code-box').classList.add('hidden');
+      const verified = document.getElementById('verified-header');
+      verified.classList.remove('hidden');
+      verified.classList.add('fade-in');
+    }
+  } catch (e) { /* network hiccup, ignore and retry next tick */ }
+}
+const pollTimer = setInterval(pollOrderStatus, 1500);
+</script>
+{% endif %}
+{% endblock %}

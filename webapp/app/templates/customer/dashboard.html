@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+  <div class="bg-gradient-to-br from-brand-600 to-brand-700 rounded-2xl p-8 text-white shadow-card mb-8">
+    <h1 class="text-2xl font-bold">Hi {{ current_user.full_name.split(' ')[0] }}, welcome back 👋</h1>
+    <p class="text-brand-50/90 mt-1 mb-5">Scan a product's QR code on the shelf to add it to your cart — no queues, no scales.</p>
+    <a href="{{ url_for('customer.scan') }}"
+       class="inline-flex items-center gap-2 bg-white text-brand-700 font-bold px-5 py-3 rounded-xl hover:bg-brand-50 transition">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" class="w-5 h-5">
+        <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <rect x="7" y="7" width="10" height="10" rx="1" stroke="currentColor" stroke-width="2"/>
+      </svg>
+      Scan a product
+    </a>
+  </div>
+
+  <div class="grid sm:grid-cols-2 gap-4 mb-8">
+    <a href="{{ url_for('customer.cart') }}" class="bg-white rounded-2xl border border-slate-200 shadow-card p-5 hover:shadow-md transition flex items-center justify-between">
+      <div>
+        <p class="font-bold text-slate-800">My cart</p>
+        <p class="text-sm text-slate-500">{{ cart_count }} item{{ 's' if cart_count != 1 else '' }} waiting for checkout</p>
+      </div>
+      <span class="text-2xl">🛒</span>
+    </a>
+    <a href="{{ url_for('customer.orders') }}" class="bg-white rounded-2xl border border-slate-200 shadow-card p-5 hover:shadow-md transition flex items-center justify-between">
+      <div>
+        <p class="font-bold text-slate-800">My orders</p>
+        <p class="text-sm text-slate-500">View past bills &amp; exit codes</p>
+      </div>
+      <span class="text-2xl">🧾</span>
+    </a>
+  </div>
+
+  {% if recent_orders %}
+  <h2 class="text-lg font-bold text-slate-800 mb-3">Recent orders</h2>
+  <div class="space-y-2">
+    {% for o in recent_orders %}
+    <a href="{{ url_for('customer.order_success', sale_id=o.id) }}"
+       class="flex items-center justify-between bg-white border border-slate-200 rounded-xl px-5 py-3 hover:shadow-card transition">
+      <span class="text-sm text-slate-600">Order #{{ '%04d'|format(o.id) }} &middot; {{ o.created_at.strftime('%d %b %Y') }}</span>
+      <span class="font-bold text-slate-800">{{ format_currency(o.total_amount) }}</span>
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

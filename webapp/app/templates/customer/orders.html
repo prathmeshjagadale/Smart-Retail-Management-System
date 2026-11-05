@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}My Orders{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold text-slate-800 mb-5">My orders</h1>
+
+{% if not orders %}
+<div class="max-w-md mx-auto text-center bg-white border border-slate-200 rounded-2xl shadow-card p-10">
+  <p class="text-5xl mb-3">🧾</p>
+  <p class="text-slate-500 mb-5">You haven't placed any orders yet.</p>
+  <a href="{{ url_for('customer.scan') }}" class="inline-block px-5 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-semibold">Start shopping</a>
+</div>
+{% else %}
+<div class="space-y-3 max-w-2xl">
+  {% for sale in orders %}
+  <a href="{{ url_for('customer.order_success', sale_id=sale.id) }}"
+     class="flex items-center justify-between bg-white border border-slate-200 rounded-xl px-5 py-4 hover:shadow-card transition">
+    <div>
+      <p class="font-semibold text-slate-800">Order #{{ '%04d'|format(sale.id) }}</p>
+      <p class="text-xs text-slate-400">{{ sale.created_at.strftime('%d %b %Y, %H:%M') }} &middot; {{ sale.items|length }} item{{ 's' if sale.items|length != 1 else '' }}</p>
+    </div>
+    <div class="text-right">
+      <p class="font-bold text-slate-800">{{ format_currency(sale.total_amount) }}</p>
+      {% if sale.status == 'completed' %}
+        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-50 text-brand-700">Completed</span>
+      {% else %}
+        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">Code: {{ sale.exit_code }}</span>
+      {% endif %}
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

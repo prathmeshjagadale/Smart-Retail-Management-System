@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }}{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+  <a href="{{ url_for('super_admin.shelves') }}" class="text-sm text-slate-500 hover:text-slate-700">&larr; Back to shelves</a>
+
+  <div class="grid md:grid-cols-5 gap-6 mt-4">
+    <div class="md:col-span-3 bg-white rounded-2xl border border-slate-200 shadow-card p-6">
+      <h1 class="text-2xl font-bold text-slate-800">{{ product.name }}</h1>
+      {% if product.description %}<p class="text-slate-500 mt-1">{{ product.description }}</p>{% endif %}
+
+      <div class="grid grid-cols-2 gap-3 mt-5">
+        <div class="bg-slate-50 rounded-xl p-4">
+          <p class="text-xs text-slate-400 uppercase tracking-wide">Price</p>
+          <p class="text-xl font-extrabold text-slate-800">{{ format_currency(product.price) }}</p>
+        </div>
+        <div class="bg-slate-50 rounded-xl p-4">
+          <p class="text-xs text-slate-400 uppercase tracking-wide">Unit weight</p>
+          <p class="text-xl font-extrabold text-slate-800">{{ product.unit_weight_grams }} g</p>
+        </div>
+        <div class="bg-slate-50 rounded-xl p-4">
+          <p class="text-xs text-slate-400 uppercase tracking-wide">Current shelf weight</p>
+          <p class="text-xl font-extrabold text-slate-800">{{ product.current_weight_grams }} g</p>
+        </div>
+        <div class="bg-brand-50 rounded-xl p-4">
+          <p class="text-xs text-brand-600 uppercase tracking-wide">Stock available</p>
+          <p class="text-xl font-extrabold text-brand-700">{{ product.stock_quantity }} units</p>
+        </div>
+      </div>
+
+      <p class="text-xs text-slate-400 mt-5">
+        Shelf: {{ product.shelf.name }} (load cell #{{ product.shelf.load_cell_index }}) &middot;
+        Registered {{ product.created_at.strftime('%d %b %Y, %H:%M') }} UTC
+      </p>
+
+      <form method="POST" action="{{ url_for('super_admin.remove_product', product_id=product.id) }}" class="mt-5"
+            onsubmit="return confirm('Remove {{ product.name }} from its shelf?');">
+        {% include "_csrf.html" %}
+        <button type="submit" class="px-4 py-2 rounded-lg text-sm font-semibold border border-red-200 text-red-600 hover:bg-red-50">
+          Remove product from shelf
+        </button>
+      </form>
+    </div>
+
+    <div class="md:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-card p-6 flex flex-col items-center text-center">
+      <p class="text-xs text-slate-400 uppercase tracking-wide mb-3">Shelf QR code</p>
+      {% if product.qr_code_path %}
+        <img src="{{ url_for('static', filename=product.qr_code_path) }}" alt="QR code for {{ product.name }}"
+             class="w-48 h-48 border border-slate-100 rounded-xl p-2">
+        <a href="{{ url_for('super_admin.download_qr', product_id=product.id) }}"
+           class="mt-4 w-full inline-block px-4 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm">
+          Download PNG
+        </a>
+        <p class="text-xs text-slate-400 mt-3">Print and stick this on {{ product.shelf.name }} so customers can scan it.</p>
+      {% else %}
+        <p class="text-sm text-slate-400 italic">QR code not generated.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

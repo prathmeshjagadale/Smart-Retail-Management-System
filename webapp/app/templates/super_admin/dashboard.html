@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="mb-6">
+  <h1 class="text-2xl font-bold text-slate-800">Super Admin Dashboard</h1>
+  <p class="text-slate-500 text-sm">Live overview of shelves, stock and sales.</p>
+</div>
+
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-card p-5">
+    <p class="text-xs font-medium text-slate-400 uppercase tracking-wide">Active products</p>
+    <p class="text-3xl font-extrabold text-slate-800 mt-1">{{ total_products }}</p>
+  </div>
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-card p-5">
+    <p class="text-xs font-medium text-slate-400 uppercase tracking-wide">Stock value</p>
+    <p class="text-3xl font-extrabold text-brand-700 mt-1">{{ format_currency(total_stock_value) }}</p>
+  </div>
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-card p-5">
+    <p class="text-xs font-medium text-slate-400 uppercase tracking-wide">Today's revenue</p>
+    <p class="text-3xl font-extrabold text-amber-600 mt-1">{{ format_currency(todays_revenue) }}</p>
+    <p class="text-xs text-slate-400 mt-1">{{ todays_count }} order{{ 's' if todays_count != 1 else '' }}</p>
+  </div>
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-card p-5">
+    <p class="text-xs font-medium text-slate-400 uppercase tracking-wide">Cashiers</p>
+    <p class="text-3xl font-extrabold text-slate-800 mt-1">{{ total_cashiers }}</p>
+  </div>
+</div>
+
+<div class="flex items-center justify-between mb-4">
+  <h2 class="text-lg font-bold text-slate-800">Shelves</h2>
+  <a href="{{ url_for('super_admin.shelves') }}" class="text-sm font-semibold text-brand-700 hover:underline">Manage shelves &rarr;</a>
+</div>
+
+<div class="grid md:grid-cols-3 gap-4" id="dash-shelves">
+  {% for shelf in shelves %}
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-card p-5">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="font-bold text-slate-800">{{ shelf.name }}</h3>
+      <span class="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">Load cell #{{ shelf.load_cell_index }}</span>
+    </div>
+    {% set product = shelf.active_product %}
+    {% if product %}
+      <p class="font-semibold text-slate-700">{{ product.name }}</p>
+      <p class="text-sm text-slate-500">{{ format_currency(product.price) }} / unit</p>
+      <div class="mt-3 flex items-center justify-between text-sm">
+        <span class="text-slate-500">Stock</span>
+        <span class="font-bold {{ 'text-red-600' if product.stock_quantity == 0 else 'text-brand-700' }}">{{ product.stock_quantity }} units</span>
+      </div>
+    {% else %}
+      <p class="text-sm text-slate-400 italic py-3">No product assigned yet.</p>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+
+<div class="grid sm:grid-cols-3 gap-4 mt-8">
+  <a href="{{ url_for('super_admin.shelves') }}" class="bg-brand-600 hover:bg-brand-700 text-white rounded-2xl p-5 shadow-card transition">
+    <p class="font-bold">Manage Shelves</p>
+    <p class="text-sm text-brand-50/90 mt-1">Add products, generate QR codes</p>
+  </a>
+  <a href="{{ url_for('super_admin.sales_report') }}" class="bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl p-5 shadow-card transition">
+    <p class="font-bold text-slate-800">Sales Report</p>
+    <p class="text-sm text-slate-500 mt-1">Revenue &amp; product performance</p>
+  </a>
+  <a href="{{ url_for('super_admin.cashiers') }}" class="bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl p-5 shadow-card transition">
+    <p class="font-bold text-slate-800">Cashier Accounts</p>
+    <p class="text-sm text-slate-500 mt-1">Create &amp; manage cashier logins</p>
+  </a>
+</div>
+{% endblock %}

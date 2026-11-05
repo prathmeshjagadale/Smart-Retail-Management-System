@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Checkout{% endblock %}
+{% block content %}
+<div class="max-w-lg mx-auto">
+  <h1 class="text-2xl font-bold text-slate-800 mb-1">Checkout</h1>
+  <p class="text-slate-500 text-sm mb-6">
+    {% if razorpay_order_id %}
+      Secure payment powered by Razorpay <span class="font-semibold">(test mode)</span>.
+    {% else %}
+      Demo payment mode &mdash; no real Razorpay keys configured. Use the simulate button below.
+    {% endif %}
+  </p>
+
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-card p-6 mb-5">
+    <h2 class="font-semibold text-slate-700 mb-3">Order summary</h2>
+    <div class="space-y-2">
+      {% for item in items %}
+      <div class="flex justify-between text-sm">
+        <span class="text-slate-600">{{ item.name }} &times; {{ item.quantity }}</span>
+        <span class="font-medium text-slate-800">{{ format_currency(item.subtotal) }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="flex justify-between items-center border-t border-slate-100 mt-4 pt-4">
+      <span class="font-bold text-slate-800">Total</span>
+      <span class="text-2xl font-extrabold text-brand-700">{{ format_currency(total) }}</span>
+    </div>
+  </div>
+
+  {% if razorpay_order_id %}
+    <button id="rzp-btn" class="w-full py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-lg">
+      Pay {{ format_currency(total) }} with Razorpay
+    </button>
+
+    <form id="callback-form" method="POST" action="{{ url_for('customer.payment_callback') }}" class="hidden">
+      {% include "_csrf.html" %}
+      <input type="hidden" name="razorpay_payment_id" id="rzp_payment_id">
+      <input type="hidden" name="razorpay_order_id" id="rzp_order_id">
+      <input type="hidden" name="razorpay_signature" id="rzp_signature">
+    </form>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+      document.getElementById('rzp-btn').addEventListener('click', function () {
+        const options = {
+          key: "{{ razorpay_key_id }}",
+          amount: {{ (total * 100) | int }},
+          currency: "{{ currency }}",
+          name: "SmartShelf Store",
+          description: "Order payment (test mode)",
+          order_id: "{{ razorpay_order_id }}",
+          prefill: {
+            name: "{{ current_user.full_name }}",
+            email: "{{ current_user.email or '' }}",
+            contact: "{{ current_user.phone or '' }}"
+          },
+          theme: { color: "#059669" },
+          handler: function (response) {
+            document.getElementById('rzp_payment_id').value = response.razorpay_payment_id;
+            document.getElementById('rzp_order_id').value = response.razorpay_order_id;
+            document.getElementById('rzp_signature').value = response.razorpay_signature;
+            document.getElementById('callback-form').submit();
+          },
+        };
+        const rzp = new Razorpay(options);
+        rzp.open();
+      });
+    </script>
+  {% else %}
+    <form method="POST" action="{{ url_for('customer.payment_simulate') }}">
+      {% include "_csrf.html" %}
+      <button type="submit" class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-lg">
+        Simulate payment success (demo)
+      </button>
+    </form>
+    <p class="text-xs text-slate-400 text-center mt-3">
+      To enable real Razorpay test-mode checkout, set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in the .env file.
+    </p>
+  {% endif %}
+
+  <a href="{{ url_for('customer.cart') }}" class="block text-center text-sm text-slate-500 hover:text-slate-700 mt-5">&larr; Back to cart</a>
+</div>
+{% endblock %}

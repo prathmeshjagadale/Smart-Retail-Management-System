@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Cashier Accounts{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold text-slate-800 mb-1">Cashier accounts</h1>
+<p class="text-slate-500 text-sm mb-6">
+  Only super admins can create cashier logins — customers cannot register as cashiers.
+  Passwords stay visible here at all times, and you can change one whenever you like.
+</p>
+
+<div class="bg-white rounded-2xl border border-slate-200 shadow-card p-6 mb-6">
+  <h2 class="font-bold text-slate-800 mb-4">Create cashier account</h2>
+  <form method="POST" class="grid sm:grid-cols-4 gap-3 items-end">
+    {% include "_csrf.html" %}
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1">Full name</label>
+      <input type="text" name="full_name" required
+             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1">Username</label>
+      <input type="text" name="username" required
+             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1">Email <span class="text-slate-400 font-normal">(optional)</span></label>
+      <input type="email" name="email"
+             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+    </div>
+    <button type="submit" class="py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-semibold">
+      Create cashier
+    </button>
+  </form>
+  <p class="text-xs text-slate-400 mt-3">A random password is generated automatically and shown in the table below — it never expires from view.</p>
+</div>
+
+<div class="bg-white rounded-2xl border border-slate-200 shadow-card overflow-x-auto">
+  <table class="w-full text-sm min-w-[820px]">
+    <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
+      <tr>
+        <th class="text-left px-5 py-3">Name</th>
+        <th class="text-left px-5 py-3">Username</th>
+        <th class="text-left px-5 py-3">Password</th>
+        <th class="text-left px-5 py-3">Status</th>
+        <th class="text-left px-5 py-3">Created</th>
+        <th class="px-5 py-3"></th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100">
+      {% for c in cashiers %}
+      <tr>
+        <td class="px-5 py-3 font-medium text-slate-700">{{ c.full_name }}</td>
+        <td class="px-5 py-3 text-slate-500">{{ c.username }}</td>
+        <td class="px-5 py-3">
+          <div class="flex items-center gap-2">
+            <span class="js-pw font-mono text-slate-700 tracking-wide" data-pw="{{ c.plain_password or '' }}">
+              {{ '•' * 10 if c.plain_password else '—' }}
+            </span>
+            {% if c.plain_password %}
+            <button type="button" onclick="togglePw(this)" class="text-slate-400 hover:text-slate-700" title="Show/hide password">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" class="w-4 h-4">
+                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" stroke="currentColor" stroke-width="2"/>
+                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </button>
+            {% endif %}
+          </div>
+        </td>
+        <td class="px-5 py-3">
+          {% if c.is_active_account %}
+            <span class="text-xs font-semibold px-2 py-1 rounded-full bg-brand-50 text-brand-700">Active</span>
+          {% else %}
+            <span class="text-xs font-semibold px-2 py-1 rounded-full bg-red-50 text-red-600">Deactivated</span>
+          {% endif %}
+        </td>
+        <td class="px-5 py-3 text-slate-400">{{ c.created_at.strftime('%d %b %Y') }}</td>
+        <td class="px-5 py-3">
+          <div class="flex items-center justify-end gap-3">
+            <button type="button" onclick="toggleChangeRow('row-{{ c.id }}')" class="text-xs font-semibold text-brand-700 hover:underline">
+              Change password
+            </button>
+            <form method="POST" action="{{ url_for('super_admin.toggle_cashier', user_id=c.id) }}">
+              {% include "_csrf.html" %}
+              <button type="submit" class="text-xs font-semibold text-slate-500 hover:text-slate-800 hover:underline">
+                {{ 'Deactivate' if c.is_active_account else 'Activate' }}
+              </button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      <tr id="row-{{ c.id }}" class="hidden bg-slate-50">
+        <td colspan="6" class="px-5 py-3">
+          <form method="POST" action="{{ url_for('super_admin.change_cashier_password', user_id=c.id) }}" class="flex items-center gap-2">
+            {% include "_csrf.html" %}
+            <input type="text" name="new_password" placeholder="Leave blank to auto-generate"
+                   class="flex-1 max-w-xs rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+            <button type="submit" class="px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">
+              Set new password
+            </button>
+            <span class="text-xs text-slate-400">Updates immediately and stays visible above.</span>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="px-5 py-8 text-center text-slate-400 italic">No cashier accounts yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function togglePw(btn) {
+  const span = btn.previousElementSibling;
+  const raw = span.dataset.pw;
+  const isHidden = span.textContent.trim().startsWith('•');
+  span.textContent = isHidden ? raw : '•'.repeat(10);
+}
+function toggleChangeRow(id) {
+  document.getElementById(id).classList.toggle('hidden');
+}
+</script>
+{% endblock %}

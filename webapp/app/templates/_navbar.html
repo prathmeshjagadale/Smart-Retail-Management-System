@@ -1,0 +1,82 @@
+<nav class="bg-white border-b border-slate-200 sticky top-0 z-40">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="flex items-center justify-between h-16">
+      <a href="{{ '/' }}" class="flex items-center gap-2 font-extrabold text-brand-700 text-lg">
+        <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-brand-600 text-white">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" class="w-5 h-5">
+            <path d="M3 3h2l2.4 12.4a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.6L21 8H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="9" cy="21" r="1.5" fill="currentColor"/>
+            <circle cx="18" cy="21" r="1.5" fill="currentColor"/>
+          </svg>
+        </span>
+        SmartShelf
+      </a>
+
+      {% if current_user.is_authenticated %}
+      <div class="hidden md:flex items-center gap-1">
+        {% if current_user.role == 'super_admin' %}
+          {% set links = [
+            ('super_admin.dashboard', 'Dashboard'),
+            ('super_admin.shelves', 'Shelves'),
+            ('super_admin.cashiers', 'Cashiers'),
+            ('super_admin.sales_report', 'Sales Report'),
+            ('super_admin.payments', 'Payments'),
+            ('super_admin.account', 'Account'),
+          ] %}
+        {% elif current_user.role == 'cashier' %}
+          {% set links = [('cashier.dashboard', 'Verify Exit Code')] %}
+        {% elif current_user.role == 'customer' %}
+          {% set links = [
+            ('customer.dashboard', 'Home'),
+            ('customer.scan', 'Scan Product'),
+            ('customer.orders', 'My Orders'),
+          ] %}
+        {% else %}
+          {% set links = [] %}
+        {% endif %}
+        {% for endpoint, label in links %}
+          <a href="{{ url_for(endpoint) }}"
+             class="px-3 py-2 rounded-md text-sm font-medium {{ 'bg-brand-50 text-brand-700' if request.endpoint == endpoint else 'text-slate-600 hover:bg-slate-100' }}">
+            {{ label }}
+          </a>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="flex items-center gap-3">
+        {% if current_user.is_authenticated %}
+          {% if current_user.role == 'customer' %}
+          <a href="{{ url_for('customer.cart') }}" class="relative p-2 rounded-md hover:bg-slate-100 text-slate-600" title="Cart">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" class="w-6 h-6">
+              <path d="M3 3h2l2.4 12.4a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.6L21 8H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="9" cy="21" r="1.5" fill="currentColor"/><circle cx="18" cy="21" r="1.5" fill="currentColor"/>
+            </svg>
+            {% if nav_cart_count %}
+            <span class="absolute -top-1 -right-1 bg-amber-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">{{ nav_cart_count }}</span>
+            {% endif %}
+          </a>
+          {% endif %}
+          <div class="hidden sm:flex flex-col items-end leading-tight">
+            <span class="text-sm font-semibold text-slate-700">{{ current_user.full_name }}</span>
+            <span class="text-[11px] uppercase tracking-wide text-slate-400">{{ current_user.role.replace('_',' ') }}</span>
+          </div>
+          <a href="{{ url_for('auth.logout') }}" class="px-3 py-1.5 rounded-md text-sm font-medium border border-slate-200 text-slate-600 hover:bg-slate-100">Logout</a>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}" class="px-3 py-1.5 rounded-md text-sm font-medium text-slate-600 hover:bg-slate-100">Login</a>
+          <a href="{{ url_for('auth.register') }}" class="px-3 py-1.5 rounded-md text-sm font-semibold bg-brand-600 text-white hover:bg-brand-700">Sign up</a>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if current_user.is_authenticated %}
+    <div class="md:hidden flex gap-1 overflow-x-auto pb-2 -mx-1 px-1">
+      {% for endpoint, label in links %}
+        <a href="{{ url_for(endpoint) }}"
+           class="whitespace-nowrap px-3 py-1.5 rounded-md text-xs font-medium {{ 'bg-brand-50 text-brand-700' if request.endpoint == endpoint else 'text-slate-600 bg-slate-100' }}">
+          {{ label }}
+        </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+</nav>

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Sales Report{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold text-slate-800 mb-1">Sales report</h1>
+<p class="text-slate-500 text-sm mb-6">All completed and paid orders.</p>
+
+<form method="GET" class="flex flex-wrap items-end gap-3 bg-white rounded-2xl border border-slate-200 shadow-card p-4 mb-6">
+  <div>
+    <label class="block text-xs font-medium text-slate-500 mb-1">From</label>
+    <input type="date" name="from" value="{{ date_from }}" class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+  </div>
+  <div>
+    <label class="block text-xs font-medium text-slate-500 mb-1">To</label>
+    <input type="date" name="to" value="{{ date_to }}" class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+  </div>
+  <button type="submit" class="px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">Filter</button>
+  {% if date_from or date_to %}
+  <a href="{{ url_for('super_admin.sales_report') }}" class="px-4 py-2 rounded-lg border border-slate-200 text-slate-500 text-sm font-semibold hover:bg-slate-50">Clear</a>
+  {% endif %}
+  <div class="ml-auto text-right">
+    <p class="text-xs text-slate-400 uppercase tracking-wide">Total revenue</p>
+    <p class="text-2xl font-extrabold text-brand-700">{{ format_currency(total_revenue) }}</p>
+  </div>
+</form>
+
+<div class="grid lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-card overflow-x-auto">
+    <table class="w-full text-sm min-w-[600px]">
+      <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
+        <tr>
+          <th class="text-left px-5 py-3">Order</th>
+          <th class="text-left px-5 py-3">Customer</th>
+          <th class="text-left px-5 py-3">Items</th>
+          <th class="text-left px-5 py-3">Status</th>
+          <th class="text-right px-5 py-3">Amount</th>
+          <th class="text-left px-5 py-3">Date</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for sale in sales %}
+        <tr>
+          <td class="px-5 py-3 font-mono text-slate-500">#{{ '%04d'|format(sale.id) }}</td>
+          <td class="px-5 py-3 text-slate-700">{{ sale.customer.full_name }}</td>
+          <td class="px-5 py-3 text-slate-500">{{ sale.items|length }} item{{ 's' if sale.items|length != 1 else '' }}</td>
+          <td class="px-5 py-3">
+            {% if sale.status == 'completed' %}
+              <span class="text-xs font-semibold px-2 py-1 rounded-full bg-brand-50 text-brand-700">Completed</span>
+            {% else %}
+              <span class="text-xs font-semibold px-2 py-1 rounded-full bg-amber-50 text-amber-700">Paid</span>
+            {% endif %}
+          </td>
+          <td class="px-5 py-3 text-right font-bold text-slate-800">{{ format_currency(sale.total_amount) }}</td>
+          <td class="px-5 py-3 text-slate-400">{{ sale.paid_at.strftime('%d %b %Y, %H:%M') if sale.paid_at else '—' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="px-5 py-8 text-center text-slate-400 italic">No sales in this period.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-card p-5 h-fit">
+    <h2 class="font-bold text-slate-800 mb-4">Top products</h2>
+    <div class="space-y-3">
+      {% for name, stats in product_totals.items()|sort(attribute='1.revenue', reverse=True) %}
+      <div class="flex items-center justify-between text-sm">
+        <div>
+          <p class="font-medium text-slate-700">{{ name }}</p>
+          <p class="text-xs text-slate-400">{{ stats.quantity }} sold</p>
+        </div>
+        <p class="font-bold text-slate-800">{{ format_currency(stats.revenue) }}</p>
+      </div>
+      {% else %}
+      <p class="text-sm text-slate-400 italic">No data yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

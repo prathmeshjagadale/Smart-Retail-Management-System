@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}My Cart{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold text-slate-800 mb-5">My cart</h1>
+
+{% if not items %}
+<div class="max-w-md mx-auto text-center bg-white border border-slate-200 rounded-2xl shadow-card p-10">
+  <p class="text-5xl mb-3">🛒</p>
+  <p class="text-slate-500 mb-5">Your cart is empty.</p>
+  <a href="{{ url_for('customer.scan') }}" class="inline-block px-5 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-semibold">Scan a product</a>
+</div>
+{% else %}
+<div class="grid lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-2 space-y-3" id="cart-list">
+    {% for item in items %}
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-card p-4 flex items-center gap-4" data-item-id="{{ item.id }}">
+      <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center text-xl flex-shrink-0">🛍️</div>
+      <div class="flex-1 min-w-0">
+        <p class="font-semibold text-slate-800 truncate">{{ item.product.name }}</p>
+        <p class="text-sm text-slate-500">{{ format_currency(item.product.price) }} each &middot; {{ item.product.stock_quantity }} available</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="changeQty({{ item.id }}, -1)" class="w-8 h-8 rounded-lg border border-slate-300 font-bold text-slate-600 hover:bg-slate-50">&minus;</button>
+        <span class="w-8 text-center font-bold js-qty">{{ item.quantity }}</span>
+        <button onclick="changeQty({{ item.id }}, 1)" class="w-8 h-8 rounded-lg border border-slate-300 font-bold text-slate-600 hover:bg-slate-50">+</button>
+      </div>
+      <p class="w-20 text-right font-bold text-slate-800 js-subtotal">{{ format_currency(item.subtotal) }}</p>
+      <form method="POST" action="{{ url_for('customer.cart_remove', item_id=item.id) }}">
+        {% include "_csrf.html" %}
+        <button type="submit" class="text-slate-300 hover:text-red-500 p-1" title="Remove">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" class="w-5 h-5">
+            <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="bg-white border border-slate-200 rounded-2xl shadow-card p-6 h-fit">
+    <h2 class="font-bold text-slate-800 mb-4">Order summary</h2>
+    <div class="flex items-center justify-between text-slate-600 mb-2">
+      <span>Items</span>
+      <span id="cart-item-count">{{ items|length }}</span>
+    </div>
+    <div class="flex items-center justify-between text-lg font-bold text-slate-800 border-t border-slate-100 pt-3 mt-3">
+      <span>Total</span>
+      <span id="cart-total">{{ format_currency(total) }}</span>
+    </div>
+    <a href="{{ url_for('customer.checkout') }}"
+       class="mt-5 w-full inline-block text-center py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-lg">
+      Proceed to checkout
+    </a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+async function changeQty(itemId, delta) {
+  const row = document.querySelector(`[data-item-id="${itemId}"]`);
+  const qtyEl = row.querySelector('.js-qty');
+  let qty = parseInt(qtyEl.textContent) + delta;
+  if (qty < 1) qty = 0;
+
+  const res = await apiFetch(`/customer/cart/update/${itemId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `quantity=${qty}`,
+  });
+  const data = await res.json();
+
+  if (data.removed) {
+    row.remove();
+    if (!document.querySelectorAll('#cart-list [data-item-id]').length) {
+      window.location.reload();
+    }
+  } else {
+    qtyEl.textContent = data.quantity;
+    row.querySelector('.js-subtotal').textContent = formatMoney(data.subtotal);
+  }
+  document.getElementById('cart-total').textContent = formatMoney(data.cart_total ?? 0);
+}
+
+function formatMoney(v) {
+  return "{{ '₹' if currency == 'INR' else currency + ' ' }}" + Number(v).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+</script>
+{% endblock %}

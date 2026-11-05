@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="csrf-token" content="IjJjOTY0MzYyYTA1NTkzMTVhODQzY2MzNTRlMzg5NGRhNzY0NzZjMWMi.aoAxJQ.mJFP6VjHGeV1kYNltWy5tlFwcsQ">
+<title>Cashier Login · SmartShelf Store</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
+        colors: {
+          brand: {
+            50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7',
+            400: '#34d399', 500: '#10b981', 600: '#059669', 700: '#047857',
+            800: '#065f46', 900: '#064e3b',
+          },
+          amber: { 50:'#fffbeb',100:'#fef3c7',400:'#fbbf24',500:'#f59e0b',600:'#d97706' },
+        },
+        boxShadow: { card: '0 1px 3px 0 rgba(0,0,0,0.07), 0 1px 2px -1px rgba(0,0,0,0.07)' },
+      }
+    }
+  }
+</script>
+<style>
+  body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+  .fade-in { animation: fadeIn .25s ease-out; }
+  @keyframes fadeIn { from { opacity:0; transform: translateY(-4px);} to { opacity:1; transform: translateY(0);} }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+</style>
+
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+<nav class="bg-white border-b border-slate-200 sticky top-0 z-40">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="flex items-center justify-between h-16">
+      <a href="/" class="flex items-center gap-2 font-extrabold text-brand-700 text-lg">
+        <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-brand-600 text-white">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" class="w-5 h-5">
+            <path d="M3 3h2l2.4 12.4a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.6L21 8H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="9" cy="21" r="1.5" fill="currentColor"/>
+            <circle cx="18" cy="21" r="1.5" fill="currentColor"/>
+          </svg>
+        </span>
+        SmartShelf
+      </a>
+
+      
+
+      <div class="flex items-center gap-3">
+        
+          <a href="/auth/login" class="px-3 py-1.5 rounded-md text-sm font-medium text-slate-600 hover:bg-slate-100">Login</a>
+          <a href="/auth/register" class="px-3 py-1.5 rounded-md text-sm font-semibold bg-brand-600 text-white hover:bg-brand-700">Sign up</a>
+        
+      </div>
+    </div>
+
+    
+  </div>
+</nav>
+
+<div class="flex-1 w-full">
+  <div id="flash-container" class="max-w-5xl mx-auto px-4 pt-4 space-y-2">
+    
+      
+    
+  </div>
+
+  <main class="max-w-6xl mx-auto px-4 py-6 w-full">
+    
+<div class="max-w-md mx-auto mt-6">
+  <div class="flex justify-center gap-1 mb-6 bg-white border border-slate-200 rounded-xl p-1 shadow-card">
+    
+    <a href="/auth/login"
+       class="flex-1 text-center text-sm font-semibold py-2 rounded-lg transition text-slate-500 hover:bg-slate-50">
+      Customer
+    </a>
+    
+    <a href="/auth/login/cashier"
+       class="flex-1 text-center text-sm font-semibold py-2 rounded-lg transition bg-brand-600 text-white">
+      Cashier
+    </a>
+    
+    <a href="/auth/login/admin"
+       class="flex-1 text-center text-sm font-semibold py-2 rounded-lg transition text-slate-500 hover:bg-slate-50">
+      Super Admin
+    </a>
+    
+  </div>
+
+  <div class="text-center mb-6">
+    <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-600 text-white mb-3">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" class="w-7 h-7">
+        <path d="M3 3h2l2.4 12.4a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.6L21 8H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="9" cy="21" r="1.5" fill="currentColor"/><circle cx="18" cy="21" r="1.5" fill="currentColor"/>
+      </svg>
+    </div>
+    <h1 class="text-2xl font-bold text-slate-800">Cashier Login</h1>
+    <p class="text-slate-500 text-sm mt-1">Sign in to verify customer exit codes</p>
+  </div>
+
+  <form method="POST" class="bg-white border border-slate-200 rounded-2xl shadow-card p-6 space-y-4">
+    <input type="hidden" name="csrf_token" value="IjJjOTY0MzYyYTA1NTkzMTVhODQzY2MzNTRlMzg5NGRhNzY0NzZjMWMi.aoAxJQ.mJFP6VjHGeV1kYNltWy5tlFwcsQ">
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1">Username</label>
+      <input type="text" name="username" required autofocus
+             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1">Password</label>
+      <input type="password" name="password" required
+             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+    </div>
+    <button type="submit"
+            class="w-full py-2.5 rounded-lg bg-brand-600 text-white font-semibold hover:bg-brand-700 transition">
+      Sign in
+    </button>
+  </form>
+
+  
+  <p class="text-center text-xs text-slate-400 mt-5">Cashier accounts are created by the store super admin — self-registration is not available here.</p>
+  
+</div>
+
+  </main>
+</div>
+
+<footer class="border-t border-slate-200 bg-white mt-10">
+  <div class="max-w-6xl mx-auto px-4 py-4 text-xs text-slate-400 flex flex-wrap justify-between gap-2">
+    <span>&copy; 2026 SmartShelf Store &mdash; ESP32 Smart Weighing Demo</span>
+    <span>Payment mode: <strong class="text-slate-500">SIMULATE</strong></span>
+  </div>
+</footer>
+
+<script>
+  // Global fetch helper that always attaches the CSRF token
+  const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]').content;
+  function apiFetch(url, options = {}) {
+    options.headers = Object.assign({ 'X-CSRFToken': CSRF_TOKEN }, options.headers || {});
+    return fetch(url, options);
+  }
+  setTimeout(() => {
+    document.querySelectorAll('#flash-container > div').forEach(el => {
+      el.style.transition = 'opacity .4s ease';
+      el.style.opacity = '0';
+      setTimeout(() => el.remove(), 400);
+    });
+  }, 6000);
+</script>
+
+</body>
+</html>
